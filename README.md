@@ -17,20 +17,16 @@ fmtlog is a performant asynchronous logging library using [fmt](https://github.c
 
 ## Install
 C++17 is required, and fmtlog is dependent on [fmtlib](https://github.com/fmtlib/fmt), you need to install fmtlib first if you haven't.
-#### Header only version
-Just copy `fmtlog.h` and `fmtlog-inl.h` to your project, and:
-* Either define macro `FMTLOG_HEADER_ONLY` before including fmtlog.h.
-* Or include `fmtlog-inl.h` in one of your source files.
 
-#### Static/Shared lib version built by CMake
-```console
-$ git clone https://github.com/MengRao/fmtlog.git
-$ cd fmtlog
-$ git submodule init
-$ git submodule update
-$ ./build.sh
+Inside the Project just execute the following commands:
+```shell
+cmake.
+sudo make install
 ```
-Then copy `fmtlog.h` and `libfmtlog-static.a`/`libfmtlog-shared.so` generated in `.build` dir.
+After this, the library is installed on your system and can be accessed in the next project with e.g. cmake:
+```cmake
+find_package(fmtlog REQUIRED)
+```
 
 ## Usage
 ```c++

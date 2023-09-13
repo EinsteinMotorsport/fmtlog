@@ -1,31 +1,47 @@
 cmake_minimum_required(VERSION 3.15)
 
-project(fmtlog CXX)
+project(fmtlog VERSION 1.0.1 LANGUAGES CXX)
+include(GNUInstallDirs)
+find_package(fmt REQUIRED)
 
 if(MSVC)
     add_compile_options(/std:c++latest)
 else()
-    add_compile_options(-Wall -O3 -std=c++17)
-    #add_compile_options(-Wall -Ofast -std=c++2a -DNDEBUG -march=skylake -flto -fno-exceptions -fno-rtti -fno-unwind-tables -fno-asynchronous-unwind-tables -DFMTLOG_NO_CHECK_LEVEL=1)
-    #SET(CMAKE_AR  "gcc-ar")
-    #SET(CMAKE_RANLIB  "gcc-ranlib")
-    link_libraries(pthread)
+    set(CMAKE_CXX_FLAGS "-Wall -O3 -std=c++17")
 endif()
 
-link_directories(.)
-include_directories(fmt/include)
+add_library(${PROJECT_NAME} INTERFACE)
+target_include_directories(
+        ${PROJECT_NAME}
+        INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 
-add_library(fmtlog-shared SHARED fmtlog.cc)
-if(MSVC)
-  target_link_libraries(fmtlog-shared fmt)
-endif()
-install(TARGETS fmtlog-shared)
+install(TARGETS ${PROJECT_NAME}
+        EXPORT ${PROJECT_NAME}_Targets
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-add_library(fmtlog-static fmtlog.cc)
-if(MSVC)
-  target_link_libraries(fmtlog-static fmt)
-endif()
-install(TARGETS fmtlog-static)
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file("fmtlogConfigVersion.cmake"
+        VERSION ${PROJECT_VERSION}
+        COMPATIBILITY SameMajorVersion)
 
-add_subdirectory(fmt)
+configure_package_config_file(
+        "${PROJECT_SOURCE_DIR}/cmake/${PROJECT_NAME}Config.cmake.in"
+        "${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
+        INSTALL_DESTINATION
+        ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/cmake)
+
+install(EXPORT ${PROJECT_NAME}_Targets
+        FILE ${PROJECT_NAME}Targets.cmake
+        NAMESPACE ${PROJECT_NAME}::
+        DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/cmake)
+
+install(FILES "${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
+        "${PROJECT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
+        DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/cmake)
+
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/include DESTINATION include)
+
 add_subdirectory(test)
